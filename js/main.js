@@ -1,8 +1,9 @@
 // Get DOM elements
 const wheel = document.getElementById("spinner");
 const spinBtn = document.getElementById("spin-button");
+const mdlspinBtn = document.getElementById("middle-spin-btn");
 const refreshBtn = document.getElementById("refresh-button");
-const finalValue = document.getElementById("winner-name");
+const finalValue = document.getElementById("output");
 const inputValue = document.getElementById("name-input");
 var inputNames = inputValue.value.split(",");
 
@@ -49,7 +50,8 @@ function createPieChart(element, labels, data, colors) {
 function displayValue(angleValue) {
   for (let i of rotationValues) {
     if (angleValue >= i.minDegree && angleValue <= i.maxDegree) {
-      finalValue.innerHTML = `<p>Value: ${i.value}</p>`;
+      finalValue.innerHTML = `Winner Is: ${i.value}`;
+      // Display the winner in the toast
       spinBtn.disabled = false;
       break;
     }
@@ -60,13 +62,18 @@ function displayValue(angleValue) {
 let count = 0;
 let resultValue = 101;
 
-// Event listener for the spin button
-spinBtn.addEventListener("click", () => {
+
+
+const executeSpin=()=>{
+  if(inputNames.length==0){
+    alert("Please Enter names to pick the winner name")
+    return;
+  }
 
   spinBtn.disabled = true;
-  finalValue.innerHTML = `<p>Good Luck!`;
+  finalValue.innerHTML = `Good Luck!`;
 
-  const randomDegree = Math.floor(Math.random() * (355 - 0 + 1) + 0);
+  // const randomDegree = Math.floor(Math.random() * (355 - 0 + 1) + 0);
   // console.log(randomDegree)
   let rotationInterval = window.setInterval(() => {
     myChart.options.rotation = myChart.options.rotation + resultValue;
@@ -75,7 +82,7 @@ spinBtn.addEventListener("click", () => {
       count += 1;
       resultValue -= 5;
       myChart.options.rotation = 0;
-    } else if (count > 15  && myChart.options.rotation==233) {
+    } else if (count > 15 && myChart.options.rotation == 233) {
       console.log(myChart.options.rotation)
       displayValue(myChart.options.rotation);
       updateRotationValues(inputNames)
@@ -86,17 +93,23 @@ spinBtn.addEventListener("click", () => {
       resultValue = 101;
     }
   }, 10);
-});
+}
 
-const updateRotationValues=(names)=>{
+// Event listener for the spin button
+mdlspinBtn.addEventListener("click",executeSpin)
+
+
+spinBtn.addEventListener("click", executeSpin);
+
+const updateRotationValues = (names) => {
   shuffleArray(names);
-  rotationValues=[]
+  rotationValues = []
   for (let i = 0; i < names.length; i++) {
     const minDegree = (i / names.length) * 360;
     const maxDegree = ((i + 1) / names.length) * 360;
     const value = names[i];
     rotationValues.push({ minDegree, maxDegree, value });
-}
+  }
 }
 
 function shuffleArray(array) {
@@ -113,7 +126,7 @@ const updateChartData = () => {
     .filter((name) => name !== "");
 
   if (cleanedNames.length != inputNames.length) {
-    inputNames =[...cleanedNames]
+    inputNames = [...cleanedNames]
     const randomColors = generateRandomColors(inputNames.length);
     myChart.data.datasets[0].backgroundColor = randomColors;
     myChart.data.datasets[0].data = new Array(cleanedNames.length).fill(10);
@@ -147,16 +160,13 @@ const getRandomColor = () => {
   return color;
 }
 
-
-// Add an input event listener
-refreshBtn.addEventListener('click',()=>{
-  inputValue.value=""
+refreshBtn.addEventListener('click', () => {
+  inputValue.value = ""
   updateChartData()
 })
-inputValue.addEventListener("blur",()=>{
+inputValue.addEventListener("keyup", () => {
   updateChartData()
-  
-} );
+});
 
 inputValue.value = "Rahat, Saifin, Azad, Amirul, Khair, Mujib"
 updateChartData()
